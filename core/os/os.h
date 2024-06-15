@@ -129,6 +129,8 @@ public:
 
 	static OS *get_singleton();
 
+	void add_logger_from_outside(Logger *p_logger);
+
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }
 
@@ -174,7 +176,9 @@ public:
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
-	virtual void vibrate_handheld(int p_duration_ms = 500) {}
+
+	virtual void vibrate_handheld(int p_duration_ms = 500) {
+	}
 
 	virtual Error shell_open(String p_uri);
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
@@ -239,9 +243,13 @@ public:
 	void set_stdout_enabled(bool p_enabled);
 	void set_stderr_enabled(bool p_enabled);
 
-	virtual void disable_crash_handler() {}
+	virtual void disable_crash_handler() {
+	}
+
 	virtual bool is_disable_crash_handler() const { return false; }
-	virtual void initialize_debugging() {}
+
+	virtual void initialize_debugging() {
+	}
 
 	virtual uint64_t get_static_memory_usage() const;
 	virtual uint64_t get_static_memory_peak_usage() const;
@@ -306,7 +314,9 @@ public:
 	virtual bool request_permission(const String &p_name) { return true; }
 	virtual bool request_permissions() { return true; }
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
-	virtual void revoke_granted_permissions() {}
+
+	virtual void revoke_granted_permissions() {
+	}
 
 	// For recording / measuring benchmark data. Only enabled with tools
 	void set_use_benchmark(bool p_use_benchmark);
@@ -317,7 +327,8 @@ public:
 	virtual void benchmark_end_measure(const String &p_what);
 	virtual void benchmark_dump();
 
-	virtual void process_and_drop_events() {}
+	virtual void process_and_drop_events() {
+	}
 
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path);
 
@@ -330,7 +341,8 @@ public:
 
 	// Load GDExtensions specific to this platform.
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
-	virtual void load_platform_gdextensions() const {}
+	virtual void load_platform_gdextensions() const {
+	}
 
 	OS();
 	virtual ~OS();

@@ -56,6 +56,10 @@ OS *OS::get_singleton() {
 	return singleton;
 }
 
+void OS::add_logger_from_outside(Logger *p_logger) {
+	add_logger(p_logger);
+}
+
 uint64_t OS::get_ticks_msec() const {
 	return get_ticks_usec() / 1000ULL;
 }
