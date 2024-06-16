@@ -87,8 +87,10 @@ Envelope *SentryClient::envelope_from_error(SentryError *error) {
 	fingerprint.append(String::num_int64(error->line));
 	fingerprint.append(error->code);
 
-	print_line(error->code);
-	EnvelopeMessage *message = memnew(EnvelopeMessage(EnvelopeMessage::Level::ERROR, error->get_simplified_error_message(), error->code, "godot.sentry.logger", extra, errors, fingerprint));
+	TypedArray<EnvelopeException> exceptions{};
+	exceptions.append(memnew(EnvelopeException(error->get_exception_name(), error->code, error->file)));
+
+	EnvelopeMessage *message = memnew(EnvelopeMessage(EnvelopeMessage::Level::ERROR, error->get_simplified_error_message(), error->code, "godot.sentry.logger", extra, errors, fingerprint, exceptions));
 	messages.append(message);
 
 	TypedArray<EnvelopeItem> items{};

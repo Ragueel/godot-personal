@@ -50,6 +50,21 @@ public:
 	Dictionary to_sentry_payload();
 };
 
+class EnvelopeException : public RefCounted {
+public:
+	EnvelopeException(const String &exc_type, const String &exc_value, const String &exc_module) :
+		exc_type(exc_type),
+		exc_value(exc_value),
+		exc_module(exc_module) {
+	}
+
+	String exc_type;
+	String exc_value;
+	String exc_module;
+
+	Dictionary to_sentry_payload();
+};
+
 class EnvelopeMessage : public RefCounted {
 public:
 	enum Level {
@@ -60,14 +75,15 @@ public:
 		DEBUG,
 	};
 
-	EnvelopeMessage(::EnvelopeMessage::Level level, const String &message, const String &log_message, const String &logger, const Dictionary &extra, const TypedArray<EnvelopeErrorMessage> &errors, Vector<String> fingerprint) :
+	EnvelopeMessage(::EnvelopeMessage::Level level, const String &message, const String &log_message, const String &logger, const Dictionary &extra, const TypedArray<EnvelopeErrorMessage> &errors, Vector<String> fingerprint, const TypedArray<EnvelopeException> &exceptions) :
 		message(message),
 		log_message(log_message),
 		level(level),
 		logger(logger),
 		extra(extra),
 		message_errors(errors),
-		fingerprint(fingerprint) {
+		fingerprint(fingerprint),
+		exceptions(exceptions) {
 	}
 
 	String message;
@@ -77,6 +93,7 @@ public:
 	Dictionary extra;
 	TypedArray<EnvelopeErrorMessage> message_errors;
 	Vector<String> fingerprint;
+	TypedArray<EnvelopeException> exceptions;
 
 	String get_level_string();
 	Dictionary to_sentry_payload();

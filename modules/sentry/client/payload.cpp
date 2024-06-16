@@ -29,6 +29,15 @@ Dictionary EnvelopeErrorMessage::to_sentry_payload() {
 	return payload;
 }
 
+Dictionary EnvelopeException::to_sentry_payload() {
+	Dictionary payload{};
+	payload["type"] = exc_type;
+	payload["value"] = exc_value;
+	payload["module"] = exc_module;
+
+	return payload;
+}
+
 String EnvelopeMessage::get_level_string() {
 	switch (level) {
 		case FATAL:
@@ -59,7 +68,7 @@ Dictionary EnvelopeMessage::to_sentry_payload() {
 	payload["logger"] = logger;
 	payload["extra"] = extra;
 	payload["level"] = get_level_string();
-	payload["errors"] = errors;
+	payload["errors"] = errors; // TODO: Remove it from here?
 	payload["platform"] = "native";
 	payload["timestamp"] = Time::get_singleton()->get_datetime_string_from_system(true, false) + "Z";
 	payload["fingerprint"] = fingerprint;
@@ -84,6 +93,15 @@ Dictionary EnvelopeMessage::to_sentry_payload() {
 	Dictionary log_entry{};
 	log_entry["formatted"] = log_message;
 	payload["logentry"] = log_entry;
+
+	Dictionary exception{};
+	TypedArray<Dictionary> exception_values;
+	for (int i = 0; i < exceptions.size(); i++) {
+		EnvelopeException *exception = cast_to<EnvelopeException>(exceptions[i]);
+		exception_values.append(exception->to_sentry_payload());
+	}
+	exception["values"] = exception_values;
+	payload["exception"] = exception;
 
 	return payload;
 }

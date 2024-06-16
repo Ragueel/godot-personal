@@ -21,6 +21,7 @@ public:
 	String rationale;
 	String error_type;
 
+	String get_exception_name();
 	String get_error_message();
 	String get_simplified_error_message();
 };
