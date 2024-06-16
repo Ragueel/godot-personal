@@ -60,8 +60,9 @@ public:
 		DEBUG,
 	};
 
-	EnvelopeMessage(::EnvelopeMessage::Level level, const String &message, const String &logger, const Dictionary &extra, const TypedArray<EnvelopeErrorMessage> &errors, Vector<String> fingerprint) :
+	EnvelopeMessage(::EnvelopeMessage::Level level, const String &message, const String &log_message, const String &logger, const Dictionary &extra, const TypedArray<EnvelopeErrorMessage> &errors, Vector<String> fingerprint) :
 		message(message),
+		log_message(log_message),
 		level(level),
 		logger(logger),
 		extra(extra),
@@ -70,6 +71,7 @@ public:
 	}
 
 	String message;
+	String log_message;
 	Level level;
 	String logger;
 	Dictionary extra;

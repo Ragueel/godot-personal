@@ -20,5 +20,8 @@ public:
 	String code;
 	String rationale;
 	String error_type;
+
+	String get_error_message();
+	String get_simplified_error_message();
 };
 #endif

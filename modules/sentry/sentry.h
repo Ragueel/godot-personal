@@ -12,7 +12,7 @@ class ErrPayload : public RefCounted {
 public:
 	ErrPayload();
 
-	ErrPayload(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type) :
+	ErrPayload(const String &p_function, const String &p_file, int p_line, const String &p_code, const String &p_rationale, bool p_editor_notify, Logger::ErrorType p_type) :
 		p_function(p_function),
 		p_file(p_file),
 		p_line(p_line),
@@ -22,11 +22,11 @@ public:
 		p_type(p_type) {
 	}
 
-	const char *p_function;
-	const char *p_file;
+	String p_function;
+	String p_file;
 	int p_line;
-	const char *p_code;
-	const char *p_rationale;
+	String p_code;
+	String p_rationale;
 	bool p_editor_notify;
 	Logger::ErrorType p_type;
 };

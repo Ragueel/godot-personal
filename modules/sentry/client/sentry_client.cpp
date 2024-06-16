@@ -50,6 +50,7 @@ void SentryClient::send_error(SentryError *error) {
 
 	Envelope *envelope = envelope_from_error(error);
 	String payload = envelope->to_sentry_payload();
+	print_line(payload);
 
 	Vector<uint8_t> p_body = payload.to_utf8_buffer();
 
@@ -79,13 +80,15 @@ Envelope *SentryClient::envelope_from_error(SentryError *error) {
 	TypedArray<EnvelopeMessage> messages{};
 
 	TypedArray<EnvelopeErrorMessage> errors{};
-	errors.append(memnew(EnvelopeErrorMessage(error->error_type, error->file + "::" + error->line +"::" + error->function, error->rationale)));
+	errors.append(memnew(EnvelopeErrorMessage(error->error_type, error->get_error_message(), error->code)));
 	Vector<String> fingerprint{};
 	fingerprint.append(error->function);
 	fingerprint.append(error->file);
 	fingerprint.append(String::num_int64(error->line));
+	fingerprint.append(error->code);
 
-	EnvelopeMessage *message = memnew(EnvelopeMessage(EnvelopeMessage::Level::ERROR, error->function, "godot.sentry.logger", extra, errors, fingerprint));
+	print_line(error->code);
+	EnvelopeMessage *message = memnew(EnvelopeMessage(EnvelopeMessage::Level::ERROR, error->get_simplified_error_message(), error->code, "godot.sentry.logger", extra, errors, fingerprint));
 	messages.append(message);
 
 	TypedArray<EnvelopeItem> items{};

@@ -12,15 +12,20 @@ void SentryLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 }
 
 void SentryLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
-	Logger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
-
 	print_line("Got message");
+	print_line(p_function);
+	print_line(p_file);
+	print_line(p_line);
+	print_line("Code");
+	print_line(String(p_code));
+	print_line("Rationale");
+	print_line(String(p_rationale));
+
 	if (not_processed_error_payloads.size() > 100) {
 		print_line("skipping error");
 		return;
 	}
 	mutex.lock();
-	// possible race conditions maybe should use new thread or some sort of mutex
 	not_processed_error_payloads.append(memnew(ErrPayload(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type)));
 	mutex.unlock();
 }
@@ -87,11 +92,11 @@ void Sentry::process_pending_messages() {
 		for (int i = 0; i < not_processed_payloads.size(); i++) {
 			ErrPayload *current_payload = ErrPayload::cast_to<ErrPayload>(not_processed_payloads.get(i));
 			SentryError *err = memnew(SentryError(
-				current_payload->p_function,
-				current_payload->p_file,
+				String(current_payload->p_function),
+				String(current_payload->p_file),
 				current_payload->p_line,
-				current_payload->p_code,
-				current_payload->p_rationale,
+				String(current_payload->p_code),
+				String(current_payload->p_rationale),
 				logger_error_type_string(current_payload->p_type)
 			));
 

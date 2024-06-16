@@ -81,6 +81,10 @@ Dictionary EnvelopeMessage::to_sentry_payload() {
 	}
 	payload["contexts"] = contexts;
 
+	Dictionary log_entry{};
+	log_entry["formatted"] = log_message;
+	payload["logentry"] = log_entry;
+
 	return payload;
 }
 
