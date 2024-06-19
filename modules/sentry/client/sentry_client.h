@@ -19,6 +19,9 @@ private:
 	Mutex requests_pool_mutex;
 	TypedArray<HTTPRequest *> requests_pool;
 
+	Mutex requests_list_mutex;
+	TypedArray<HTTPRequest *> requests_list;
+
 	HTTPRequest *get_request_from_pool();
 	void put_request_into_pool(HTTPRequest *request);
 

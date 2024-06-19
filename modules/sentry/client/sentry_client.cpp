@@ -23,10 +23,17 @@ HTTPRequest *SentryClient::get_request_from_pool() {
 
 	request->set_timeout(15);
 
+	requests_list_mutex.lock();
+	requests_list.append(request);
+	requests_list_mutex.unlock();
+
 	return request;
 }
 
 void SentryClient::put_request_into_pool(HTTPRequest *request) {
+	requests_pool_mutex.lock();
+	requests_pool.append(request);
+	requests_pool_mutex.unlock();
 }
 
 SentryClient::SentryClient() {
@@ -65,6 +72,11 @@ void SentryClient::initiailize(String sentry_dsn) {
 
 void SentryClient::close() {
 	// graceful close
+	for (int i = 0; i < requests_list.size(); i++) {
+		HTTPRequest *request = cast_to<HTTPRequest>(requests_list[i]);
+		request->cancel_request();
+		request->queue_free();
+	}
 }
 
 bool SentryClient::is_initialized() {
