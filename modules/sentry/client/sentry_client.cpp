@@ -6,6 +6,29 @@
 #include "scene/main/window.h"
 
 
+HTTPRequest *SentryClient::get_request_from_pool() {
+	requests_pool_mutex.lock();
+
+	if (requests_pool.size() > 0) {
+		HTTPRequest *http_request = Object::cast_to<HTTPRequest>(requests_pool.pop_front());
+		requests_pool_mutex.unlock();
+		return http_request;
+	}
+
+	requests_pool_mutex.unlock();
+	SceneTree *tree = SceneTree::get_singleton();
+	HTTPRequest *request = memnew(HTTPRequest);
+
+	tree->get_root()->call_deferred("add_child", request);
+
+	request->set_timeout(15);
+
+	return request;
+}
+
+void SentryClient::put_request_into_pool(HTTPRequest *request) {
+}
+
 SentryClient::SentryClient() {
 	is_ready = false;
 }
@@ -40,6 +63,10 @@ void SentryClient::initiailize(String sentry_dsn) {
 	envelope_endpoint = protocol + "://" + domain + "/api/" + project_id + "/envelope/";
 }
 
+void SentryClient::close() {
+	// graceful close
+}
+
 bool SentryClient::is_initialized() {
 	return is_ready;
 }
@@ -50,7 +77,6 @@ void SentryClient::send_error(SentryError *error) {
 
 	Envelope *envelope = envelope_from_error(error);
 	String payload = envelope->to_sentry_payload();
-	print_line(payload);
 
 	Vector<uint8_t> p_body = payload.to_utf8_buffer();
 
@@ -58,18 +84,23 @@ void SentryClient::send_error(SentryError *error) {
 }
 
 void SentryClient::send_payload(Vector<String> &headers, Vector<uint8_t> &p_body, String &endpoint) {
-	SceneTree *tree = SceneTree::get_singleton();
-	HTTPRequest *request = memnew(HTTPRequest);
-
-	tree->get_root()->call_deferred("add_child", request);
-
+	HTTPRequest *request = get_request_from_pool();
 	request->call_deferred("request_raw", endpoint, headers, HTTPClient::METHOD_POST, p_body);
-	request->connect("request_completed", callable_mp(this, &SentryClient::request_completed));
+	request->connect("request_completed", callable_mp(this, &SentryClient::request_completed).bind(request));
 }
 
-void SentryClient::request_completed(int result, int code, Vector<String> headers, PackedByteArray body) {
+void SentryClient::request_completed(int result, int code, Vector<String> headers, PackedByteArray body, const HTTPRequest *request) {
+	requests_pool_mutex.lock();
+	requests_pool.append(request);
+	requests_pool_mutex.unlock();
+
+	if (code >= 300) {
+		print_line("could not send to sentry");
+		return;
+	}
+
 	String result_json = String::utf8((const char *)&body[0], body.size());
-	print_line(result_json);
+	Dictionary result = JSON::parse_string(result_json);
 }
 
 Envelope *SentryClient::envelope_from_error(SentryError *error) {
@@ -106,9 +137,5 @@ String SentryClient::random_id() {
 	data.set(6, (data[6] & 0x0f) | 0x40);
 	data.set(8, (data[8] & 0x3f) | 0x80);
 
-	return String::hex_encode_buffer(&data[0], 16)
-	       .insert(8, "-")
-	       .insert(13, "-")
-	       .insert(18, "-")
-	       .insert(23, "-");
+	return String::hex_encode_buffer(&data[0], 16);
 }
